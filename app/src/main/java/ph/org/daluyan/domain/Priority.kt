@@ -83,6 +83,7 @@ object AssessmentEngine {
         val dates = reports.asSequence().filter { it.id != r.id && it.createdAt != r.createdAt &&
             GeoMath.distanceMeters(it.latitude, it.longitude, r.latitude, r.longitude) <= 50.0 }
             .map { java.time.Instant.ofEpochMilli(it.createdAt).atZone(java.time.ZoneOffset.UTC).toLocalDate() }
+            .filter { it != java.time.Instant.ofEpochMilli(r.createdAt).atZone(java.time.ZoneOffset.UTC).toLocalDate() }
             .toSet()
         val recurrence = (dates.size + 1).coerceAtMost(5)
         val severityScore = (r.severity * 20) // 20, 40, 60
