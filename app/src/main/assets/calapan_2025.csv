@@ -1,0 +1,15 @@
+waterbody,station,classification,indicator,value,guideline,unit,year,period
+Calapan Bay,Parang,SB,Fecal coliform,490,100,MPN/100mL,2025,First semester
+Calapan Bay,Lazareto,SB,Fecal coliform,2288,100,MPN/100mL,2025,First semester
+Calapan Bay,Pachoca,SB,Fecal coliform,1258,100,MPN/100mL,2025,First semester
+Calapan Bay,Mahal na Pangalan,SB,Fecal coliform,326,100,MPN/100mL,2025,First semester
+Calapan River,Biga,C,Fecal coliform,6760,200,MPN/100mL,2025,First semester
+Calapan River,Bayanan II-A,C,Fecal coliform,6846,200,MPN/100mL,2025,First semester
+Calapan River,Bayanan II,C,Fecal coliform,7777,200,MPN/100mL,2025,First semester
+Calapan River,Sta. Isabel,C,Fecal coliform,21354,200,MPN/100mL,2025,First semester
+Calapan River,Lalud,C,Fecal coliform,3765,200,MPN/100mL,2025,First semester
+Calapan River,Camilmil,C,Fecal coliform,4757,200,MPN/100mL,2025,First semester
+Calapan River,San Vicente East,C,Fecal coliform,7495,200,MPN/100mL,2025,First semester
+Calapan River,San Vicente North,C,Fecal coliform,23042,200,MPN/100mL,2025,First semester
+Calapan River,Market Bridge,C,Fecal coliform,26398,200,MPN/100mL,2025,First semester
+Calapan River,River Delta,C,Fecal coliform,3525,200,MPN/100mL,2025,First semester
