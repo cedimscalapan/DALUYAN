@@ -1,16 +1,18 @@
-# Quality gate (DALUYAN Android MVP)
+# Validation plan · DALUYAN 0.2.0
 
-Automated CI must pass :app:testDebugUnitTest and :app:assembleDebug. Only a successful run with a nonempty artifact is considered a confirmed build. Site scores are transparent heuristic decision support, not verified environmental risk ratings.
+Status: tests executed in GitHub CI only after its build run completes; device-level tests are not yet confirmed.
 
-## Phone smoke tests before pitching
-- Map loads over internet with attribution.
-- GPS permission granted/denied flows and map coordinate selection.
-- Report name, latitude/longitude, notes, severity, repetitions, accessibility validation.
-- Camera capture, cancellation, report deletion, and photo cleanup.
-- SQLite records persist across reopening the app.
-- Priority ranking and explanation match inputs.
-- Airplane mode: saved reports, score, evidence and CSV export still work.
-- Offline map *not* advertised as available; tiles need a network connection.
-- Official 2025 water-quality records are distinguished from community litter observations.
-- CSV export opens cleanly without spreadsheet-formula execution.
-- All field work stays on safely accessible and permitted locations.
+| Area | Acceptance check |
+|---|---|
+| Form | Missing coordinates rejected, three steps usable by touch, draft survives rotation |
+| GPS | Permission denied and no fix handled, accuracy disclosed |
+| Reporting | Save/edit/delete persist across restarts, photos remain on-device |
+| Migration | Install 0.1.0, save report, install version 0.2.0 signed with same key, verify preserved records |
+| GIS | Waterway GeoJSON imported; line-to-point distance checked against QGIS; missing geometry remains unknown |
+| Offline | Existing reports and imported geometry usable with airplane mode; basemap not guaranteed offline |
+| Action | Completed requires descriptive results, remains self-reported |
+| Export | CSV opens without formula execution, no evidence is uploaded |
+| Security | No claim of official government verification; local-only records |
+| Updates | Consistent signing required for seamless updates; debug artifacts have CI signing limitations |
+
+For actual competition claims, record device model, Android version, expected/actual results, screenshots and tester name.

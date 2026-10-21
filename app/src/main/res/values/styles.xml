@@ -1,7 +1,8 @@
 <resources>
     <style name="Theme.Daluyan" parent="android:style/Theme.Material.Light.NoActionBar">
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:statusBarColor">#F5F8F6</item>
-        <item name="android:navigationBarColor">#FFFFFF</item>
+        <item name="android:statusBarColor">#F4F8F6</item>
+        <item name="android:navigationBarColor">#F4F8F6</item>
+        <item name="android:windowLightNavigationBar">true</item>
     </style>
 </resources>
