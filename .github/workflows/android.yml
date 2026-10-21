@@ -10,6 +10,9 @@ jobs:
   android:
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
     steps:
       - uses: actions/checkout@v4
       - name: Configure Java 17
@@ -19,7 +22,9 @@ jobs:
           java-version: '17'
       - name: Install Android API 35 and build tools using runner SDK
         run: |
-          sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f | sort -V | tail -n 1)"
+          test -n "$SDKMANAGER"
+          "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --install "platforms;android-35" "build-tools;35.0.0"
       - name: Configure Gradle 8.11.1
         uses: gradle/actions/setup-gradle@v4
         with:
