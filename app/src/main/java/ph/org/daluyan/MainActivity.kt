@@ -48,6 +48,7 @@ private val Green = Color(0xFF17684E)
 private val Dark = Color(0xFF20332D)
 private val OffWhite = Color(0xFFF3F7F4)
 
+@OptIn(ExperimentalMaterial3Api::class)
 class MainActivity: ComponentActivity() {
     private val store by lazy { ReportDatabase(applicationContext) }
 
