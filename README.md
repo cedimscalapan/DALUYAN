@@ -1,31 +1,24 @@
-# DALUYAN — Kotlin environmental action planner
+# DALUYAN v0.5 — role-adaptive Kotlin environmental case workflow
 
-**Version 0.4.1 — Premium map-first Android prototype**. Jetpack Compose, MapLibre, SQLite and HOT/OSM waterway geometry. Requires Android 8.0 or newer.
+Native Kotlin Android (Jetpack Compose, MapLibre, SQLite), six demonstrable local role profiles, actual HOT/OpenStreetMap-derived Calapan waterways, official historical DENR data and an explainable local case lifecycle.
 
-## Main experience
+**Important: organizational profiles are locally simulated and NOT real accounts or official LGU verification.** No multi-user backend is connected. Private reports stay on the phone. Refer to [ROLE_DEMO_GUIDE.md](ROLE_DEMO_GUIDE.md) for the actual end-to-end demonstration and limitations.
 
-- **Map:** Tap a real location, use device GPS, and record an environmental observation. The redesigned interface respects the system status bar and focuses on a single reporting action. A MapLibre basemap (OpenFreeMap / OpenStreetMap derived) requires internet, while the loaded HOT waterway geometry is drawn as a separate layer.
-- **Reporting:** Three short screens (where, what, review), photo evidence, offline local records, editing and validation. Bottom-sheet navigation buttons stay in a separate keyboard- and system-inset-aware footer.
-- **Actions:** Record, revise, remove, rank, document a follow-up action, and export observations as CSV. Scores are heuristic decision support—not certified risk ratings.
-- **Evidence:** 2025 historical DENR-EMB MIMAROPA fecal-coliform readings. These values are **not** solid-waste or plastic counts. A compact list expands to all readings.
-- **GIS:** On each GitHub Actions build, the real HOT/HDX Philippine waterway distribution is reduced to a Calapan *pilot rectangle*. The GeoJSON is bundled in the APK and loaded automatically to compute approximate straight-line distances offline. The equivalent GeoPackage and metadata are also bundled and exportable from Evidence for QGIS. Importing an alternative waterway-only GeoJSON layer is optional.
+## Role interfaces
 
-## Actual geographic data
+- Guest: Explore, Learn, About; no access to locally submitted private map markers.
+- Community reporter: Explore, My reports, Updates; real map-based report form, GPS, evidence photo, local case history and CSV export.
+- Barangay reviewer: Review queue, Map, Cases; verify, request clarification or reject with a mandatory justification.
+- City coordinator: Overview, Cases, Planning; action planning, field-team assignment, outcome review and reopening.
+- Field response member: My tasks, Map, History; work on assigned cases and report outcomes.
+- System administrator: Accounts, GIS data, Audit; inspect local demonstration profiles, evidence provenance and case events. Cannot pretend to provision real identities.
 
-Source: [HOT / HDX Waterways of Philippines](https://data.humdata.org/dataset/hotosm_phl_waterways), **© OpenStreetMap contributors, ODbL**. The reproducible preparation script is `scripts/prepare_waterways.py`, including direct HDX and a documented public archive fallback.
+## GIS and builds
 
-Pilot bounding rectangle (WGS84): `[121.03, 13.25, 121.38, 13.52]`. **This is not the official Calapan city boundary.** The processed reference layer contains **281 mapped lines and 8,704 segments** as of the supplied snapshot. Coverage can omit unmapped streams. Straight-line proximity does not prove drainage connectivity, environmental harm, or flood risk.
+GitHub Actions prepares real Calapan HOT/HDX waterways into GeoJSON and GeoPackage, adds data to the APK and runs unit tests. Runtime distance calculations use bundled GeoJSON. Historical DENR fecal-coliform records are separately labeled and never treated as solid waste measurements. Map basemap requires internet.
 
-On every CI build, regional `calapan_waterways.geojson`, `calapan_waterways.gpkg`, and provenance metadata are generated; both geographic formats are included as assets and separately uploaded as GIS artifacts. Android uses **GeoJSON**, not the GeoPackage database, for runtime calculation.
+Actions → latest successful Android workflow → artifact `DALUYAN-v0.5-role-workspaces-debug-apk` → unzip `app-debug.apk`.
 
-## Install the APK
+## Safety, security and privacy
 
-Go to [GitHub Actions](https://github.com/cedimscalapan/DALUYAN/actions) → latest **successful** `DALUYAN · Android CI / APK` run → artifact **DALUYAN-v0.4.1-premium-GIS-debug-apk** → unzip and install the APK.
-
-GitHub Actions runs Android compilation and Kotlin unit tests. It also validates GIS geometry before packaging the assets. A successful workflow does **not** establish physical-device, GPS or camera testing.
-
-**Important:** The build is a debug APK; each runner may use a different signing identity. Android may reject updating an earlier DALUYAN build. **Export important local records before uninstalling:** uninstalling an app generally removes its internal SQLite data and photos. A stable signed release build is not yet configured.
-
-## Boundaries and privacy
-
-Reports and photos remain on the user's device unless explicitly exported. No LGU role or official verification is claimed. Offline observations, evidence details and geographic distances work without internet once the bundled layer is loaded. Live basemap tiles still need connectivity. Avoid entering unsafe or private locations.
+This is a demonstration, not a government deployment. No real LGU authorization, registration, cross-device synchronization, user verification or secure server audit is implemented. Local reports and photos are not automatically uploaded. Case role switching is intentionally open for judges and **must not be reused as authorization logic for production**. Never encourage unsafe field access. GitHub's per-run debug signing may prevent in-place upgrades.
