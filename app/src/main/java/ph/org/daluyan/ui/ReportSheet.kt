@@ -34,8 +34,9 @@ fun ReportSheet(
     var notes by rememberSaveable(existing?.id){mutableStateOf(existing?.notes?:"")}
     var error by remember{mutableStateOf("")}
     var saving by remember{mutableStateOf(false)}
-    Column(Modifier.fillMaxWidth().heightIn(max=670.dp).verticalScroll(rememberScrollState())
-        .padding(start=22.dp,end=22.dp,bottom=30.dp),verticalArrangement=Arrangement.spacedBy(14.dp)) {
+    Column(Modifier.fillMaxWidth().fillMaxHeight(0.88f).navigationBarsPadding().imePadding()) {
+        Column(Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState())
+            .padding(start=20.dp,end=20.dp,top=8.dp),verticalArrangement=Arrangement.spacedBy(14.dp)) {
         Eyebrow(if(existing==null)"New field observation" else "Edit field observation")
         BigTitle(if(existing==null)"Record what you see." else "Correct the record.")
         Row(horizontalArrangement=Arrangement.spacedBy(6.dp)) {
@@ -104,7 +105,10 @@ fun ReportSheet(
             }
         }
         if(error.isNotBlank()) Text(error,color=MaterialTheme.colorScheme.error,style=MaterialTheme.typography.bodySmall)
-        Row(horizontalArrangement=Arrangement.spacedBy(10.dp),verticalAlignment=Alignment.CenterVertically) {
+        }
+        Surface(color=Mist,shadowElevation=6.dp) {
+        Row(Modifier.fillMaxWidth().padding(horizontal=20.dp,vertical=12.dp),
+            horizontalArrangement=Arrangement.spacedBy(10.dp),verticalAlignment=Alignment.CenterVertically) {
             OutlinedButton(onClick={if(step==0){onCancel()}else{step--;error=""}},enabled=!saving,modifier=Modifier.weight(1f)) {
                 Text(if(step==0)"Cancel" else "Back")
             }
@@ -134,6 +138,7 @@ fun ReportSheet(
             },enabled=!saving,modifier=Modifier.weight(1f)){
                 Text(when{saving->"Saving…";step==2->"Save report";else->"Continue"})
             }
+        }
         }
     }
 }

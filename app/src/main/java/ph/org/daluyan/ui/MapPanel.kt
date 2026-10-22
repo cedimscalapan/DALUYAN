@@ -16,10 +16,15 @@ import org.maplibre.android.annotations.MarkerOptions
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import ph.org.daluyan.domain.SiteReport
+import ph.org.daluyan.data.WaterwayLayer
+import org.maplibre.android.style.sources.GeoJsonSource
+import org.maplibre.android.style.layers.LineLayer
+import org.maplibre.android.style.layers.PropertyFactory.lineColor
+import org.maplibre.android.style.layers.PropertyFactory.lineWidth
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun MapPanel(reports: List<SiteReport>, selected: Pair<Double,Double>?, onPick:(Double,Double)->Unit) {
+fun MapPanel(reports: List<SiteReport>, selected: Pair<Double,Double>?, layer:WaterwayLayer?, onPick:(Double,Double)->Unit) {
     val context=LocalContext.current
     val lifecycle=LocalLifecycleOwner.current
     val onPickLatest by rememberUpdatedState(onPick)
@@ -46,10 +51,25 @@ fun MapPanel(reports: List<SiteReport>, selected: Pair<Double,Double>?, onPick:(
     }
     LaunchedEffect(view){
         view.getMapAsync{ready->
-            ready.setStyle(Style.Builder().fromUri("https://tiles.openfreemap.org/styles/liberty")) {
+            ready.setStyle(Style.Builder().fromUri("https://tiles.openfreemap.org/styles/positron")) {
                 ready.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(13.390,121.180),10.0))
                 ready.addOnMapClickListener(MapLibreMap.OnMapClickListener { pos-> onPickLatest(pos.latitude,pos.longitude);true })
                 map=ready
+            }
+        }
+    }
+    LaunchedEffect(map,layer) {
+        map?.getStyle { style ->
+            val source=style.getSourceAs<GeoJsonSource>("daluyan-waterways")
+            if(layer!=null && layer.rawGeoJson.isNotBlank()) {
+                if(source==null) {
+                    style.addSource(GeoJsonSource("daluyan-waterways",layer.rawGeoJson))
+                    style.addLayer(LineLayer("daluyan-waterway-lines","daluyan-waterways")
+                        .withProperties(lineColor("#187D94"),lineWidth(2.8f)))
+                } else source.setGeoJson(layer.rawGeoJson)
+            } else {
+                if(style.getLayer("daluyan-waterway-lines")!=null)style.removeLayer("daluyan-waterway-lines")
+                if(source!=null)style.removeSource("daluyan-waterways")
             }
         }
     }
@@ -61,5 +81,5 @@ fun MapPanel(reports: List<SiteReport>, selected: Pair<Double,Double>?, onPick:(
             selected?.let{markers.add(ready.addMarker(MarkerOptions().position(LatLng(it.first,it.second)).title("Selected place")))}
         }
     }
-    AndroidView(factory={view},modifier=Modifier.fillMaxWidth().height(350.dp))
+    AndroidView(factory={view},modifier=Modifier.fillMaxWidth().height(405.dp))
 }

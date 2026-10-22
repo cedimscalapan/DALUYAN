@@ -64,18 +64,19 @@ fun DaluyanApp(
         surface=Color.White,onSurface=Ink,onBackground=Ink,error=Color(0xFFB34936))
     var tab by rememberSaveable { mutableIntStateOf(0) }
     val snack=remember { SnackbarHostState() }
+    var showAllEvidence by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(notice) {notice?.let{snack.showSnackbar(it);onDismissNotice()}}
     MaterialTheme(colorScheme=colors) {
         Scaffold(containerColor=Mist,
             topBar={
                 Surface(color=Mist){
-                    Row(Modifier.fillMaxWidth().padding(start=22.dp,end=22.dp,top=18.dp,bottom=12.dp),
+                    Row(Modifier.fillMaxWidth().statusBarsPadding().padding(start=20.dp,end=20.dp,top=10.dp,bottom=10.dp),
                         verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween) {
                         Column {
                             Text("DALUYAN",style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.Black,color=Forest)
-                            Text("FROM EVIDENCE TO ACTION",style=MaterialTheme.typography.labelSmall,color=Subtle)
+                            Text("Environmental action planner",style=MaterialTheme.typography.labelSmall,color=Subtle)
                         }
-                        Tag("PILOT · CALAPAN")
+                        Tag("CALAPAN · PILOT")
                     }
                 }
             },
@@ -90,58 +91,69 @@ fun DaluyanApp(
                 }
             },snackbarHost={SnackbarHost(snack)}) {padding->
             Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())
-                .padding(start=18.dp,end=18.dp,top=12.dp,bottom=22.dp),verticalArrangement=Arrangement.spacedBy(14.dp)) {
+                .padding(start=16.dp,end=16.dp,top=12.dp,bottom=18.dp),verticalArrangement=Arrangement.spacedBy(14.dp)) {
                 when(tab) {
                     0-> {
-                        Eyebrow("Your surroundings")
-                        BigTitle("Map the concern.")
-                        Muted("Explore real places. Tap any point to record an observation.")
-                        Panel {
-                            Row(verticalAlignment=Alignment.CenterVertically) {
-                                Column(Modifier.weight(1f)) {
-                                    Text("Calapan area",fontWeight=FontWeight.Bold,color=Ink)
-                                    Muted("Live map · internet needed for tiles")
-                                }
-                                Tag("${reports.size} sites")
+                        Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,
+                            horizontalArrangement=Arrangement.SpaceBetween) {
+                            Column {
+                                Text("Explore Calapan",style=MaterialTheme.typography.headlineSmall,
+                                    fontWeight=FontWeight.Bold,color=Ink)
+                                Muted("Tap anywhere on the map to mark a site")
                             }
-                            Surface(shape=RoundedCornerShape(16.dp),color=Soft){
-                                MapPanel(reports,selected){lat,lon->onPick(lat,lon)}
-                            }
-                            Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-                                OutlinedButton(onClick=onGps,modifier=Modifier.weight(1f)) {
-                                    Icon(Icons.Default.MyLocation,null,modifier=Modifier.size(18.dp));Spacer(Modifier.width(6.dp));Text("My location")
-                                }
-                                if(selected!=null) Tag("Point selected") else Tag("Tap map")
-                            }
-                            selected?.let{Muted("Selected: ${"%.5f".format(Locale.US,it.first)}, ${"%.5f".format(Locale.US,it.second)}")}
-                            gpsInfo?.let{Muted(it)}
+                            Tag("${reports.size} reports")
                         }
-                        Panel {
-                            Eyebrow("Quick action")
-                            Text("See litter? Document it.",fontWeight=FontWeight.Bold,style=MaterialTheme.typography.titleLarge,color=Ink)
-                            Muted("A short, private field report. No account or internet needed after a point is chosen.")
-                            Button(onClick=onNew,modifier=Modifier.fillMaxWidth(),contentPadding=PaddingValues(16.dp),
-                                shape=RoundedCornerShape(14.dp)) {
-                                Icon(Icons.Default.Add,null);Spacer(Modifier.width(7.dp));Text("Record observation",fontWeight=FontWeight.Bold)
-                            }
-                            Muted("Do not enter private property or unsafe locations.")
-                        }
-                        if(layer==null) Panel {
-                            Row(verticalAlignment=Alignment.CenterVertically) {
-                                Icon(Icons.Default.Layers,null,tint=Orange)
-                                Spacer(Modifier.width(9.dp))
-                                Column(Modifier.weight(1f)) {
-                                    Text("Waterway data not loaded",fontWeight=FontWeight.Bold)
-                                    Muted("Import verified GeoJSON for local GIS distances.")
+                        Surface(color=Color.White,shape=RoundedCornerShape(22.dp)) {
+                            Column {
+                                Box(Modifier.fillMaxWidth()) {
+                                    MapPanel(reports,selected,layer){lat,lon->onPick(lat,lon)}
+                                    Surface(color=Color.White.copy(alpha=0.94f),
+                                        shape=RoundedCornerShape(12.dp),
+                                        modifier=Modifier.align(Alignment.TopStart).padding(12.dp)) {
+                                        Row(Modifier.padding(horizontal=10.dp,vertical=8.dp),
+                                            verticalAlignment=Alignment.CenterVertically) {
+                                            Icon(Icons.Default.Water,null,tint=Forest,modifier=Modifier.size(16.dp))
+                                            Spacer(Modifier.width(6.dp))
+                                            Text(if(layer==null) "Waterways unavailable" else "Mapped waterways ready",
+                                                style=MaterialTheme.typography.labelMedium,color=Ink)
+                                        }
+                                    }
+                                }
+                                Column(Modifier.padding(14.dp),verticalArrangement=Arrangement.spacedBy(12.dp)) {
+                                    Row(verticalAlignment=Alignment.CenterVertically) {
+                                        Column(Modifier.weight(1f)) {
+                                            Text(if(selected==null) "Choose a location" else "Point selected",
+                                                fontWeight=FontWeight.Bold,color=Ink)
+                                            Muted(selected?.let {
+                                                "${"%.5f".format(Locale.US,it.first)}, ${"%.5f".format(Locale.US,it.second)}"
+                                            } ?: "Tap map or use your GPS")
+                                        }
+                                        OutlinedIconButton(onClick=onGps,modifier=Modifier.size(48.dp)) {
+                                            Icon(Icons.Default.MyLocation,contentDescription="Use my location",tint=Forest)
+                                        }
+                                    }
+                                    gpsInfo?.let { Muted(it) }
+                                    Button(onClick=onNew,modifier=Modifier.fillMaxWidth().height(54.dp),
+                                        shape=RoundedCornerShape(14.dp)) {
+                                        Icon(Icons.Default.Add,null);Spacer(Modifier.width(8.dp))
+                                        Text("Record observation",fontWeight=FontWeight.Bold)
+                                    }
                                 }
                             }
-                            TextButton(onClick={tab=2}) {Text("Go to Evidence");Icon(Icons.Default.ArrowForward,null)}
+                        }
+                        if(layer==null) {
+                            Panel {
+                                Text("Waterway layer unavailable",fontWeight=FontWeight.SemiBold)
+                                Muted("You can still record an observation. Import a verified layer for GIS distance estimates.")
+                                TextButton(onClick={tab=2}) { Text("Manage evidence");Icon(Icons.Default.ArrowForward,null) }
+                            }
+                        } else {
+                            Muted("HOT/OpenStreetMap waterways are stored offline. Background map tiles need internet.")
                         }
                     }
                     1-> {
-                        Eyebrow("Community observations")
-                        BigTitle("From report to action.")
-                        Muted("Only personal field notes. No site or action is officially verified.")
+                        BigTitle("Field activity")
+                        Muted("Your private reports and action notes. Not officially verified.")
                         Row(horizontalArrangement=Arrangement.spacedBy(9.dp)) {
                             StatCard("${reports.size}","Reports",Modifier.weight(1f))
                             StatCard("${reports.count{it.status==ActionStatus.COMPLETED}}","Actions noted",Modifier.weight(1f))
@@ -162,46 +174,64 @@ fun DaluyanApp(
                         }
                     }
                     else-> {
-                        Eyebrow("Transparent sources")
-                        BigTitle("Evidence, not assumptions.")
-                        Muted("Understand where every measurement comes from and what it can tell us.")
+                        BigTitle("Evidence & sources")
+                        Muted("Actual map data and historical government measurements")
                         Panel {
                             Row(verticalAlignment=Alignment.CenterVertically) {
-                                Icon(Icons.Default.Layers,null,tint=Forest)
+                                Icon(Icons.Default.Water,null,tint=Forest,modifier=Modifier.size(24.dp))
                                 Spacer(Modifier.width(10.dp))
                                 Column(Modifier.weight(1f)) {
-                                    Text("Waterway geometry",fontWeight=FontWeight.Bold)
-                                    Muted(if(layer==null)"No mapped waterway lines loaded" else "${layer.segments.size} mapped line segments · ${layer.sourceName}")
+                                    Text("Calapan waterways",fontWeight=FontWeight.Bold,
+                                        style=MaterialTheme.typography.titleMedium)
+                                    Muted(if(layer==null) "No geographic layer" else
+                                        "${layer.segments.size} mapped segments · Available offline")
                                 }
+                                Tag(if(layer==null) "MISSING" else "ACTIVE")
                             }
-                            Muted(if(layer==null)"Import verified GeoJSON waterways (maximum 3 MB)." else "Real mapped waterways are ready for offline distance calculation inside their coverage. Proximity is not a flood forecast or drainage route.")
-                            Button(onClick=onImport,modifier=Modifier.fillMaxWidth()) {
-                                Icon(Icons.Default.FileOpen,null);Spacer(Modifier.width(8.dp));Text(if(layer==null)"Import waterway GeoJSON" else "Replace waterway layer")
+                            Muted("HOT/HDX · © OpenStreetMap contributors (ODbL). Pilot rectangle, not the city boundary. Coverage may be incomplete.")
+                            TextButton(onClick=onImport) {
+                                Icon(Icons.Default.FileOpen,null);Spacer(Modifier.width(8.dp))
+                                Text("Import another GeoJSON")
                             }
-                            Muted("Source: HOT/HDX OpenStreetMap contributors (ODbL). Pilot area is a Calapan bounding rectangle, not a municipality boundary. Some small or unmapped streams may be missing.")
+                            Muted("Distances are straight-line proximity—not water flow, connectivity or ecological risk.")
                         }
                         Panel {
-                            Eyebrow("Government monitoring")
-                            Text("Calapan water quality · 2025",style=MaterialTheme.typography.titleMedium,fontWeight=FontWeight.Bold)
-                            Muted("DENR-EMB MIMAROPA historical fecal-coliform readings (MPN/100 mL). They do NOT measure solid-waste volume or live pollution.")
+                            Eyebrow("DENR-EMB MIMAROPA")
+                            Row(verticalAlignment=Alignment.CenterVertically) {
+                                Column(Modifier.weight(1f)) {
+                                    Text("Water quality · 2025",fontWeight=FontWeight.Bold,
+                                        style=MaterialTheme.typography.titleMedium)
+                                    Muted("Historical fecal-coliform readings; NOT plastic or solid-waste measurements.")
+                                }
+                                Tag("${official.size} readings")
+                            }
                             OutlinedButton(onClick=onSource,modifier=Modifier.fillMaxWidth()) {
-                                Icon(Icons.Default.OpenInNew,null);Spacer(Modifier.width(7.dp));Text("View official publication")
+                                Icon(Icons.Default.OpenInNew,null);Spacer(Modifier.width(7.dp))
+                                Text("Official publication")
                             }
                         }
-                        official.forEach{r->
-                            Panel {
+                        Panel {
+                            (if(showAllEvidence) official else official.take(4)).forEachIndexed { index,r ->
                                 Row(verticalAlignment=Alignment.CenterVertically) {
                                     Column(Modifier.weight(1f)) {
-                                        Text(r.station,fontWeight=FontWeight.Bold,color=Ink)
-                                        Muted("${r.waterbody} · Class ${r.classification} · ${r.period}")
+                                        Text(r.station,fontWeight=FontWeight.SemiBold,color=Ink)
+                                        Muted("${r.waterbody} · ${r.period} · Guideline ${r.guideline}")
                                     }
+                                    Spacer(Modifier.width(8.dp))
                                     Column(horizontalAlignment=Alignment.End) {
                                         Text(r.value.toString(),fontWeight=FontWeight.Bold,
-                                            style=MaterialTheme.typography.titleLarge,color=if(r.value>r.guideline)Orange else Forest)
+                                            color=if(r.value>r.guideline)Orange else Forest,
+                                            style=MaterialTheme.typography.titleMedium)
                                         Text("MPN/100 mL",style=MaterialTheme.typography.labelSmall,color=Subtle)
                                     }
                                 }
-                                Muted("Published guideline: ${r.guideline} ${r.unit}. No verified station coordinates supplied.")
+                                if(index<(if(showAllEvidence)official.size else minOf(4,official.size))-1)
+                                    HorizontalDivider(color=Soft)
+                            }
+                            if(official.size>4) TextButton(onClick={showAllEvidence=!showAllEvidence},
+                                modifier=Modifier.fillMaxWidth()) {
+                                Text(if(showAllEvidence) "Show less" else "View all ${official.size} readings")
+                                Icon(if(showAllEvidence)Icons.Default.ExpandLess else Icons.Default.ExpandMore,null)
                             }
                         }
                     }

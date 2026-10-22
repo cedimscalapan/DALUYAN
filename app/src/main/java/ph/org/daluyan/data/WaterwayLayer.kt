@@ -11,7 +11,8 @@ data class GeoPoint(val lat: Double, val lon: Double)
 class WaterwayLayer(
     val segments: List<Pair<GeoPoint, GeoPoint>>,
     val sourceName: String,
-    val bounds: List<Double>? = null
+    val bounds: List<Double>? = null,
+    val rawGeoJson: String = ""
 ) {
     fun distanceMeters(latitude: Double, longitude: Double): Double? {
         if (!latitude.isFinite() || !longitude.isFinite()) return null
@@ -87,7 +88,7 @@ class WaterwayLayer(
                 require(segments.size < MAX_SEGMENTS) { "Too many geometry segments." }
             }
             require(segments.isNotEmpty()) { "No waterway lines found." }
-            return WaterwayLayer(segments,sourceName,bbox)
+            return WaterwayLayer(segments,sourceName,bbox,json)
         }
     }
 }
