@@ -9,12 +9,52 @@ permissions:
 jobs:
   android:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 55
     env:
       ANDROID_HOME: /usr/local/lib/android/sdk
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
     steps:
       - uses: actions/checkout@v4
+      - name: Python geo-toolkit for HOT/HDX waterways
+        run: python -m pip install --disable-pip-version-check 'shapely>=2.0,<3' 'fiona>=1.9,<2'
+      - name: Download and prepare real Calapan waterways
+        run: python scripts/prepare_waterways.py
+      - name: Verify both GIS outputs and bundled Android layer
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          layer = Path("app/src/main/assets/calapan_waterways.geojson")
+          metadata = Path("build/waterways/calapan_waterways_metadata.json")
+          gpkg = Path("build/waterways/calapan_waterways.gpkg")
+          obj = json.loads(layer.read_text())
+          m = json.loads(metadata.read_text())
+          assert obj["type"] == "FeatureCollection"
+          assert len(obj["features"]) > 0
+          assert layer.stat().st_size <= 3 * 1024 * 1024
+          assert gpkg.stat().st_size > 1024
+          assert m["clipped_features"] == len(obj["features"])
+          assert m["segments"] > 0
+          assert all(f["geometry"]["type"] == "LineString" for f in obj["features"])
+          print("Verified actual HOT/OSM Calapan waterways:",m["clipped_features"],"features",m["segments"],"segments")
+          PY
+      - name: Upload GeoJSON and GeoPackage datasets
+        uses: actions/upload-artifact@v4
+        with:
+          name: DALUYAN-Calapan-real-GIS-data
+          path: |
+            build/waterways/calapan_waterways.geojson
+            build/waterways/calapan_waterways.gpkg
+            build/waterways/calapan_waterways_metadata.json
+          retention-days: 30
+          if-no-files-found: error
+      - name: Upload downloaded source archives for provenance
+        uses: actions/upload-artifact@v4
+        with:
+          name: DALUYAN-HOT-waterways-original-downloads
+          path: build/waterways/national_source/
+          retention-days: 7
+          if-no-files-found: warn
       - name: Java 17
         uses: actions/setup-java@v4
         with:
@@ -36,7 +76,7 @@ jobs:
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: DALUYAN-v0.2-debug-apk
+          name: DALUYAN-v0.3-with-GIS-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
           if-no-files-found: error
