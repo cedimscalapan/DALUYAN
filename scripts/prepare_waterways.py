@@ -59,10 +59,14 @@ def available_resources():
 def load_geojson(path):
     if zipfile.is_zipfile(path):
         with zipfile.ZipFile(path) as z:
-            names=[n for n in z.namelist() if n.lower().endswith((".geojson",".json")) and not n.startswith("__MACOSX")]
-            if not names: raise ValueError("Archive contains no GeoJSON")
-            names.sort(key=lambda n:("line" not in n.lower(),len(n)))
-            print("Reading",names[0],flush=True)
+            all_names=z.namelist()
+            print("HDX ZIP entries:",[(n,z.getinfo(n).file_size) for n in all_names][:25],flush=True)
+            names=[n for n in all_names if n.lower().endswith(".geojson") and not n.startswith("__MACOSX")]
+            if not names:
+                names=[n for n in all_names if n.lower().endswith(".json") and "metadata" not in n.lower() and not n.startswith("__MACOSX")]
+            if not names: raise ValueError("Archive contains no geographic GeoJSON (metadata-only archive)")
+            names.sort(key=lambda n:("line" not in n.lower(),-z.getinfo(n).file_size))
+            print("Reading geographic features:",names[0],flush=True)
             with z.open(names[0]) as stream: return json.load(stream)
     with path.open(encoding="utf-8") as stream: return json.load(stream)
 
