@@ -8,19 +8,37 @@ import java.io.File
 data class GeoPoint(val lat: Double, val lon: Double)
 
 /** Only line geometries from a waterway-specific GeoJSON export should be imported. */
-class WaterwayLayer(val segments: List<Pair<GeoPoint, GeoPoint>>, val sourceName: String) {
-    fun distanceMeters(latitude: Double, longitude: Double): Double? = segments.minOfOrNull { (a, b) ->
-        GeoMath.pointSegmentMeters(latitude,longitude,a.lat,a.lon,b.lat,b.lon)
+class WaterwayLayer(
+    val segments: List<Pair<GeoPoint, GeoPoint>>,
+    val sourceName: String,
+    val bounds: List<Double>? = null
+) {
+    fun distanceMeters(latitude: Double, longitude: Double): Double? {
+        if (!latitude.isFinite() || !longitude.isFinite()) return null
+        // Do not extrapolate pilot-only geometry outside its coverage.
+        if (bounds != null && (longitude < bounds[0] || longitude > bounds[2] ||
+                    latitude < bounds[1] || latitude > bounds[3])) return null
+        return segments.minOfOrNull { (a, b) ->
+            GeoMath.pointSegmentMeters(latitude, longitude, a.lat, a.lon, b.lat, b.lon)
+        }
     }
     companion object {
         private const val MAX_SIZE = 3 * 1024 * 1024
         private const val MAX_SEGMENTS = 40000
         private const val NAME = "waterways.geojson"
-        fun load(context: Context): WaterwayLayer? = runCatching {
-            val f = File(context.filesDir, NAME)
-            if (!f.isFile) return null
-            parse(f.readText(), "Imported GeoJSON")
-        }.getOrNull()
+        private const val BUNDLED_NAME = "calapan_waterways.geojson"
+        fun load(context: Context): WaterwayLayer? {
+            val custom = runCatching {
+                val f = File(context.filesDir, NAME)
+                if (f.isFile) parse(f.readText(), "User-imported waterway lines") else null
+            }.getOrNull()
+            if (custom != null) return custom
+            return runCatching {
+                context.assets.open(BUNDLED_NAME).bufferedReader(Charsets.UTF_8).use { reader ->
+                    parse(reader.readText(), "HOT/OSM · Calapan pilot (bundled)")
+                }
+            }.getOrNull()
+        }
         fun save(context: Context, contents: String): WaterwayLayer {
             val layer = parse(contents, "Imported GeoJSON")
             val dest = File(context.filesDir, NAME)
@@ -33,6 +51,12 @@ class WaterwayLayer(val segments: List<Pair<GeoPoint, GeoPoint>>, val sourceName
             require(json.toByteArray(Charsets.UTF_8).size <= MAX_SIZE) { "GeoJSON must be under 3 MB." }
             val root = JSONObject(json)
             require(root.optString("type") == "FeatureCollection") { "Choose a GeoJSON FeatureCollection." }
+            val bbox = root.optJSONArray("bbox")?.let { b ->
+                if (b.length() == 4) {
+                    val values = (0 until 4).map { b.getDouble(it) }
+                    if (values.all { it.isFinite() } && values[0] < values[2] && values[1] < values[3]) values else null
+                } else null
+            }
             val features = root.getJSONArray("features")
             require(features.length() in 1..5000) { "GeoJSON must contain 1–5000 features." }
             val segments = ArrayList<Pair<GeoPoint, GeoPoint>>()
@@ -63,7 +87,7 @@ class WaterwayLayer(val segments: List<Pair<GeoPoint, GeoPoint>>, val sourceName
                 require(segments.size < MAX_SEGMENTS) { "Too many geometry segments." }
             }
             require(segments.isNotEmpty()) { "No waterway lines found." }
-            return WaterwayLayer(segments,sourceName)
+            return WaterwayLayer(segments,sourceName,bbox)
         }
     }
 }
