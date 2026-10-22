@@ -1,18 +1,24 @@
-# Validation plan · DALUYAN 0.2.0
+# DALUYAN v0.4.1 validation
 
-Status: tests executed in GitHub CI only after its build run completes; device-level tests are not yet confirmed.
+## Automated (GitHub Actions)
 
-| Area | Acceptance check |
-|---|---|
-| Form | Missing coordinates rejected, three steps usable by touch, draft survives rotation |
-| GPS | Permission denied and no fix handled, accuracy disclosed |
-| Reporting | Save/edit/delete persist across restarts, photos remain on-device |
-| Migration | Install 0.1.0, save report, install version 0.2.0 signed with same key, verify preserved records |
-| GIS | Waterway GeoJSON imported; line-to-point distance checked against QGIS; missing geometry remains unknown |
-| Offline | Existing reports and imported geometry usable with airplane mode; basemap not guaranteed offline |
-| Action | Completed requires descriptive results, remains self-reported |
-| Export | CSV opens without formula execution, no evidence is uploaded |
-| Security | No claim of official government verification; local-only records |
-| Updates | Consistent signing required for seamless updates; debug artifacts have CI signing limitations |
+- [ ] HOT/HDX national waterways are prepared to a real Calapan pilot rectangle and GeoJSON data passes geometry, size, feature-count and provenance checks.
+- [ ] The derived GeoPackage is readable and attached to the build artifacts.
+- [ ] Both GeoJSON and GeoPackage are included in the APK assets.
+- [ ] Kotlin unit tests pass.
+- [ ] Gradle compiles an Android debug APK and uploads it as a workflow artifact.
 
-For actual competition claims, record device model, Android version, expected/actual results, screenshots and tester name.
+## Manual checks on an Android device
+
+- [ ] Top-bar content never overlaps status icons or display cutouts.
+- [ ] Map tiles load over internet; mapped waterways show as colored lines; report markers remain visible.
+- [ ] Open Evidence and confirm waterway data has loaded automatically, without selecting any file.
+- [ ] Export GeoJSON and GeoPackage from Evidence; verify GeoJSON and open GeoPackage in QGIS.
+- [ ] Tap a map point and successfully save, edit, delete and export an observation.
+- [ ] Test GPS with permission allowed, denied and poor accuracy.
+- [ ] Open the reporting bottom sheet and keyboard, then rotate the device. Back and Continue remain fully reachable above navigation.
+- [ ] Disable internet and confirm that saved data and distance calculations still work.
+- [ ] Expand and collapse government measurements, retaining source labels and disclaimers.
+- [ ] Verify migration and data survival across an in-place upgrade when APK signatures match.
+
+**Only GitHub Actions can establish successful compilation. This checklist does not claim physical-device tests were performed.**
