@@ -86,6 +86,30 @@ class MainActivity:ComponentActivity() {
                     } catch(e:Exception){notice="Import failed: ${e.message ?: "Invalid GeoJSON"}"}
                 }
             }
+            // Both regional GIS distributions are included as assets by GitHub Actions.
+            // GeoPackage is exported for QGIS; the Kotlin GIS engine uses GeoJSON.
+            fun exportBundled(name:String,uri:Uri?) {
+                if(uri==null)return
+                scope.launch {
+                    try {
+                        withContext(Dispatchers.IO) {
+                            assets.open(name).use { input ->
+                                contentResolver.openOutputStream(uri)?.use { output -> input.copyTo(output) }
+                                    ?: error("No export destination")
+                            }
+                        }
+                        notice="$name exported."
+                    } catch(e:Exception) { notice="Unable to export $name." }
+                }
+            }
+            val geoJsonExport=rememberLauncherForActivityResult(
+                ActivityResultContracts.CreateDocument("application/geo+json")) { uri ->
+                exportBundled("calapan_waterways.geojson",uri)
+            }
+            val geoPackageExport=rememberLauncherForActivityResult(
+                ActivityResultContracts.CreateDocument("application/geopackage+sqlite3")) { uri ->
+                exportBundled("calapan_waterways.gpkg",uri)
+            }
             val camera=rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()){ok->
                 if(ok)photo=proposed
                 else {proposed?.let{runCatching{contentResolver.delete(it,null,null)}};proposed=null}
@@ -184,6 +208,8 @@ class MainActivity:ComponentActivity() {
                     exportLauncher.launch("daluyan-observations.csv")
                 },
                 onImport={geoLauncher.launch(arrayOf("application/geo+json","application/json","text/plain","*/*"))},
+                onExportGeoJson={geoJsonExport.launch("calapan_waterways.geojson")},
+                onExportGeoPackage={geoPackageExport.launch("calapan_waterways.gpkg")},
                 onSource={startActivity(Intent(Intent.ACTION_VIEW,Uri.parse(OfficialData.SOURCE_URL)))},
                 formOpen=formOpen,editing=editor,photo=photo,onCapture=capture
             )

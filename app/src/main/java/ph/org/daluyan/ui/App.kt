@@ -58,6 +58,7 @@ fun DaluyanApp(
     onSave:(SiteReport,(Boolean)->Unit)->Unit,onCancel:()->Unit,onDelete:(SiteReport)->Unit,
     onAction:(SiteReport,ActionStatus,String,(Boolean)->Unit)->Unit,
     onExport:()->Unit,onImport:()->Unit,onSource:()->Unit,
+    onExportGeoJson:()->Unit,onExportGeoPackage:()->Unit,
     formOpen:Boolean,editing:SiteReport?,photo:Uri?,onCapture:()->Unit
 ) {
     val colors=lightColorScheme(primary=Forest,onPrimary=Color.White,secondary=Ink,background=Mist,
@@ -189,6 +190,16 @@ fun DaluyanApp(
                                 Tag(if(layer==null) "MISSING" else "ACTIVE")
                             }
                             Muted("HOT/HDX · © OpenStreetMap contributors (ODbL). Pilot rectangle, not the city boundary. Coverage may be incomplete.")
+                            Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+                                OutlinedButton(onClick=onExportGeoJson,modifier=Modifier.weight(1f)) {
+                                    Icon(Icons.Default.FileDownload,null,modifier=Modifier.size(18.dp))
+                                    Spacer(Modifier.width(5.dp));Text("GeoJSON")
+                                }
+                                OutlinedButton(onClick=onExportGeoPackage,modifier=Modifier.weight(1f)) {
+                                    Icon(Icons.Default.FileDownload,null,modifier=Modifier.size(18.dp))
+                                    Spacer(Modifier.width(5.dp));Text("GeoPackage")
+                                }
+                            }
                             TextButton(onClick=onImport) {
                                 Icon(Icons.Default.FileOpen,null);Spacer(Modifier.width(8.dp))
                                 Text("Import another GeoJSON")
