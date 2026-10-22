@@ -171,14 +171,14 @@ fun DaluyanApp(
                                 Spacer(Modifier.width(10.dp))
                                 Column(Modifier.weight(1f)) {
                                     Text("Waterway geometry",fontWeight=FontWeight.Bold)
-                                    Muted(if(layer==null)"No imported river lines" else "${layer.segments.size} mapped line segments")
+                                    Muted(if(layer==null)"No mapped waterway lines loaded" else "${layer.segments.size} mapped line segments · ${layer.sourceName}")
                                 }
                             }
-                            Muted("Import a waterway-only GeoJSON FeatureCollection from a verified GIS source (maximum 3 MB). GIS distance is straight-line proximity, not water flow or drainage connectivity.")
+                            Muted(if(layer==null)"Import verified GeoJSON waterways (maximum 3 MB)." else "Real mapped waterways are ready for offline distance calculation inside their coverage. Proximity is not a flood forecast or drainage route.")
                             Button(onClick=onImport,modifier=Modifier.fillMaxWidth()) {
                                 Icon(Icons.Default.FileOpen,null);Spacer(Modifier.width(8.dp));Text(if(layer==null)"Import waterway GeoJSON" else "Replace waterway layer")
                             }
-                            Muted("Suggested source: OpenStreetMap Overpass Turbo, exporting waterway=river/stream lines. Check local coverage and licensing before use.")
+                            Muted("Source: HOT/HDX OpenStreetMap contributors (ODbL). Pilot area is a Calapan bounding rectangle, not a municipality boundary. Some small or unmapped streams may be missing.")
                         }
                         Panel {
                             Eyebrow("Government monitoring")
